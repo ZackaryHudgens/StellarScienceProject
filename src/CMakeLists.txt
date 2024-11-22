@@ -17,4 +17,4 @@ target_include_directories(StellarScienceCubes PUBLIC
 )
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
-     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/resources")
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

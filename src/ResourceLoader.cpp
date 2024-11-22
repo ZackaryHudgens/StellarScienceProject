@@ -3,6 +3,11 @@
 namespace SSCubes
 {
   /******************************************************************************/
+  std::map<std::string, std::shared_ptr<KumaGL::Texture>> ResourceLoader::mTextureMap = std::map<std::string, std::shared_ptr<KumaGL::Texture>>();
+  std::map<std::string, std::shared_ptr<KumaGL::Shader>> ResourceLoader::mShaderMap = std::map<std::string, std::shared_ptr<KumaGL::Shader>>();
+  std::map<std::string, std::shared_ptr<KumaGL::Mesh>> ResourceLoader::mMeshMap = std::map<std::string, std::shared_ptr<KumaGL::Mesh>>();
+
+  /******************************************************************************/
   std::shared_ptr<KumaGL::Texture> ResourceLoader::LoadTexture(const std::string &aPath)
   {
     if (mTextureMap.count(aPath) > 0)

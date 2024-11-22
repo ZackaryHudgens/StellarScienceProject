@@ -155,6 +155,9 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
 /******************************************************************************/
 void LoadResources()
 {
+  SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
+                                      "resources/shaders/CubeShader.frag");
+
   auto cubeMesh = SSCubes::ResourceLoader::CreateMesh("cube");
   cubeMesh->InitCube();
 }
@@ -177,6 +180,7 @@ int main()
   }
 
   // Create the scene.
+  LoadResources();
   auto gameScene = CreateScene();
 
   // Run until instructed to close.
