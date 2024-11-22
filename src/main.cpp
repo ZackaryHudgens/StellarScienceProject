@@ -1,8 +1,9 @@
 #include <KumaGL/KumaGL.hpp>
-
 #include <GLFW/glfw3.h>
 
-#include <KumaGL/Shader.hpp>
+#include <iostream>
+#include <memory>
+
 #include <KumaECS/Scene.hpp>
 
 /******************************************************************************/
@@ -76,6 +77,13 @@ bool InitializeGL()
   glEnable(GL_DEPTH_TEST);
 
   return true;
+}
+
+/******************************************************************************/
+std::unique_ptr<KumaECS::Scene> CreateScene()
+{
+  auto newScene = std::make_unique<KumaECS::Scene>(10000);
+  return std::move(newScene);
 }
 
 /******************************************************************************/
