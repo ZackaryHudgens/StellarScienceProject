@@ -9,7 +9,7 @@ namespace SSCubes
   {
     KumaGL::Vec3 mPosition;
     KumaGL::Vec3 mRotation;
-    KumaGL::Vec3 mScale;
+    KumaGL::Vec3 mScale = KumaGL::Vec3(1, 1, 1);
   };
 }
 

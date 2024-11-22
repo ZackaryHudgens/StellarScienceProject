@@ -108,6 +108,15 @@ SSCubes::Transform CreateRandomTransform(std::random_device &aDevice)
 }
 
 /******************************************************************************/
+float CreateRandomGravity(std::random_device &aDevice)
+{
+  std::mt19937 generator(aDevice());
+  std::uniform_real_distribution<> dist(-9.81, -0.5);
+
+  return dist(generator);
+}
+
+/******************************************************************************/
 std::unique_ptr<KumaECS::Scene> CreateScene()
 {
   auto newScene = std::make_unique<KumaECS::Scene>(10000);
@@ -135,10 +144,15 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
   for (size_t i = 0; i < 9999; i++)
   {
     auto entity = newScene->CreateEntity();
-    newScene->AddComponentToEntity<SSCubes::Physics>(entity);
+
+    auto &physics = newScene->AddComponentToEntity<SSCubes::Physics>(entity);
+    physics.mAcceleration.y = CreateRandomGravity(rd);
 
     auto &renderable = newScene->AddComponentToEntity<SSCubes::Renderable>(entity);
+    renderable.mTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
     renderable.mMesh = SSCubes::ResourceLoader::CreateMesh("cube");
+    renderable.mShader = SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
+                                                             "resources/shaders/CubeShader.frag");
 
     auto &transform = newScene->AddComponentToEntity<SSCubes::Transform>(entity);
     transform = CreateRandomTransform(rd);
@@ -155,8 +169,21 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
 /******************************************************************************/
 void LoadResources()
 {
-  SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
-                                      "resources/shaders/CubeShader.frag");
+  auto cubeTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
+
+  // Use GL_NEAREST to prevent blurring from using a small texture.
+  cubeTexture->SetParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  cubeTexture->SetParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  cubeTexture->GenerateMipmap();
+
+  // Bind the texture to unit 0.
+  cubeTexture->Bind(GL_TEXTURE0);
+
+  auto cubeShader = SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
+                                                        "resources/shaders/CubeShader.frag");
+
+  // Set the texture to unit 0.
+  cubeShader->SetInt("tex", 0);
 
   auto cubeMesh = SSCubes::ResourceLoader::CreateMesh("cube");
   cubeMesh->InitCube();
@@ -194,9 +221,9 @@ int main()
     glfwPollEvents();
     glfwSwapBuffers(window);
 
-    gameScene->OperateSystems(dt);
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    gameScene->OperateSystems(dt);
   }
 
   return 0;
