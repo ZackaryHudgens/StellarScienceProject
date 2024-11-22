@@ -16,36 +16,21 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/glfw/glfw
   GIT_TAG 3.3.8
 )
-
-FetchContent_GetProperties(glfw3)
-if(NOT glfw3_POPULATED)
-  FetchContent_Populate(glfw3)
-  add_subdirectory(${glfw3_SOURCE_DIR} ${glfw3_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(glfw3)
 
 # Retrieve KumaGL.
 FetchContent_Declare(
   KumaGL
   GIT_REPOSITORY https://github.com/ZackaryHudgens/KumaGL
 )
-
-FetchContent_GetProperties(KumaGL)
-if(NOT KumaGL_POPULATED)
-  FetchContent_Populate(KumaGL)
-  add_subdirectory(${KumaGL_SOURCE_DIR} ${KumaGL_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(KumaGL)
 
 # Retrieve KumaECS.
 FetchContent_Declare(
   KumaECS
   GIT_REPOSITORY https://github.com/ZackaryHudgens/KumaECS
 )
-
-FetchContent_GetProperties(KumaECS)
-if(NOT KumaECS_POPULATED)
-  FetchContent_Populate(KumaECS)
-  add_subdirectory(${KumaECS_SOURCE_DIR} ${KumaECS_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(KumaECS)
 
 # Add subdirectories.
 add_subdirectory(src)
