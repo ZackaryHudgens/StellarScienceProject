@@ -1,5 +1,8 @@
 #include "RenderSystem.hpp"
 
+#include <map>
+#include <vector>
+
 #include <KumaECS/Scene.hpp>
 
 #include "Camera.hpp"

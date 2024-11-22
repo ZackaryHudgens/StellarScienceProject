@@ -5,6 +5,8 @@
 #include "Physics.hpp"
 #include "Transform.hpp"
 
+#include <iostream>
+
 namespace SSCubes
 {
   /******************************************************************************/

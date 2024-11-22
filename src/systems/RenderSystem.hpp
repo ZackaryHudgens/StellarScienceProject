@@ -5,7 +5,7 @@
 
 namespace SSCubes
 {
-  class RenderSystem : KumaECS::System
+  class RenderSystem : public KumaECS::System
   {
   public:
     void Operate(KumaECS::Scene &aScene, double dt) override;

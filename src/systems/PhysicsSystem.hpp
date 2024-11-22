@@ -5,7 +5,7 @@
 
 namespace SSCubes
 {
-  class PhysicsSystem : KumaECS::System
+  class PhysicsSystem : public KumaECS::System
   {
   public:
     void Operate(KumaECS::Scene &aScene, double dt) override;
