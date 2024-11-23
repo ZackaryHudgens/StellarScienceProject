@@ -9,7 +9,7 @@
 #include <KumaECS/Scene.hpp>
 
 #include "Camera.hpp"
-#include "Gravity.hpp"
+#include "Light.hpp"
 #include "Physics.hpp"
 #include "Transform.hpp"
 #include "Renderable.hpp"
@@ -119,13 +119,13 @@ float CreateRandomGravity(std::random_device &aDevice)
 /******************************************************************************/
 std::unique_ptr<KumaECS::Scene> CreateScene()
 {
-  auto newScene = std::make_unique<KumaECS::Scene>(10000);
+  auto newScene = std::make_unique<KumaECS::Scene>(10001);
 
   // Register component types.
   newScene->RegisterComponentType<SSCubes::Camera>(1);
-  newScene->RegisterComponentType<SSCubes::Gravity>(10000);
+  newScene->RegisterComponentType<SSCubes::Light>(1);
   newScene->RegisterComponentType<SSCubes::Physics>(10000);
-  newScene->RegisterComponentType<SSCubes::Transform>(10000);
+  newScene->RegisterComponentType<SSCubes::Transform>(10001);
   newScene->RegisterComponentType<SSCubes::Renderable>(10000);
 
   // Register systems.
@@ -149,7 +149,8 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
     physics.mAcceleration.y = CreateRandomGravity(rd);
 
     auto &renderable = newScene->AddComponentToEntity<SSCubes::Renderable>(entity);
-    renderable.mTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
+    renderable.mDiffuseTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
+    renderable.mSpecularTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/specular.png");
     renderable.mMesh = SSCubes::ResourceLoader::CreateMesh("cube");
     renderable.mShader = SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
                                                              "resources/shaders/CubeShader.frag");
@@ -160,8 +161,20 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
 
   // Create and add a camera.
   auto camera = newScene->CreateEntity();
-  newScene->AddComponentToEntity<SSCubes::Camera>(camera);
   newScene->AddComponentToEntity<SSCubes::Transform>(camera);
+
+  auto &cameraComponent = newScene->AddComponentToEntity<SSCubes::Camera>(camera);
+  cameraComponent.mFOV = 45;
+  cameraComponent.mNearPlane = 0.1;
+  cameraComponent.mFarPlane = 100;
+
+  // Create and add a light.
+  auto light = newScene->CreateEntity();
+  auto &lightTransform = newScene->AddComponentToEntity<SSCubes::Transform>(light);
+  lightTransform.mPosition = KumaGL::Vec3(10, 10, 0);
+
+  auto &lightComponent = newScene->AddComponentToEntity<SSCubes::Light>(light);
+  lightComponent.mColor = KumaGL::Vec3(0.9, 0.9, 0.9);
 
   return std::move(newScene);
 }
@@ -169,21 +182,21 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
 /******************************************************************************/
 void LoadResources()
 {
-  auto cubeTexture = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
+  auto cubeDiffuse = SSCubes::ResourceLoader::LoadTexture("resources/textures/diffuse.png");
+  auto cubeSpecular = SSCubes::ResourceLoader::LoadTexture("resources/textures/specular.png");
 
   // Use GL_NEAREST to prevent blurring from using a small texture.
-  cubeTexture->SetParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  cubeTexture->SetParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  cubeTexture->GenerateMipmap();
+  cubeDiffuse->SetParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  cubeDiffuse->SetParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  cubeDiffuse->GenerateMipmap();
 
-  // Bind the texture to unit 0.
-  cubeTexture->Bind(GL_TEXTURE0);
+  cubeSpecular->SetParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  cubeSpecular->SetParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  cubeSpecular->GenerateMipmap();
 
   auto cubeShader = SSCubes::ResourceLoader::LoadShader("resources/shaders/CubeShader.vert",
                                                         "resources/shaders/CubeShader.frag");
-
-  // Set the texture to unit 0.
-  cubeShader->SetInt("tex", 0);
+  cubeShader->SetFloat("shininess", 255);
 
   auto cubeMesh = SSCubes::ResourceLoader::CreateMesh("cube");
   cubeMesh->InitCube();

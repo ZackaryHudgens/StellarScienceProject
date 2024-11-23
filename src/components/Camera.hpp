@@ -5,6 +5,9 @@ namespace SSCubes
 {
   struct Camera
   {
+    float mFOV;
+    float mNearPlane;
+    float mFarPlane;
   };
 }
 
