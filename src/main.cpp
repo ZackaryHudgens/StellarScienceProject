@@ -20,9 +20,15 @@
 #include "ResourceLoader.hpp"
 
 /******************************************************************************/
-void FramebufferSizeCallback(GLFWwindow *aWindow, int aWidth, int aHeight)
+bool running = false;
+
+/******************************************************************************/
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-  glViewport(0, 0, aWidth, aHeight);
+  if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+  {
+    running = true;
+  }
 }
 
 /******************************************************************************/
@@ -59,6 +65,9 @@ GLFWwindow *CreateWindow()
   // Enable double buffering.
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
+  // Prevent manual resizing.
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
   // Create a new window.
   window = glfwCreateWindow(1280, 720, "cubes", nullptr, nullptr);
   if (window == nullptr)
@@ -71,7 +80,7 @@ GLFWwindow *CreateWindow()
   glfwMakeContextCurrent(window);
 
   // Set any GLFW callbacks.
-  glfwSetFramebufferSizeCallback(window, &FramebufferSizeCallback);
+  glfwSetKeyCallback(window, KeyCallback);
   glfwSetErrorCallback(&ErrorCallback);
 
   return window;
@@ -119,13 +128,13 @@ float CreateRandomGravity(std::random_device &aDevice)
 /******************************************************************************/
 std::unique_ptr<KumaECS::Scene> CreateScene()
 {
-  auto newScene = std::make_unique<KumaECS::Scene>(10001);
+  auto newScene = std::make_unique<KumaECS::Scene>(10002);
 
   // Register component types.
   newScene->RegisterComponentType<SSCubes::Camera>(1);
   newScene->RegisterComponentType<SSCubes::Light>(1);
   newScene->RegisterComponentType<SSCubes::Physics>(10000);
-  newScene->RegisterComponentType<SSCubes::Transform>(10001);
+  newScene->RegisterComponentType<SSCubes::Transform>(10002);
   newScene->RegisterComponentType<SSCubes::Renderable>(10000);
 
   // Register systems.
@@ -141,7 +150,7 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
 
   // Create a bunch of cubes and place them randomly.
   std::random_device rd;
-  for (size_t i = 0; i < 9999; i++)
+  for (size_t i = 0; i < 10000; i++)
   {
     auto entity = newScene->CreateEntity();
 
@@ -171,7 +180,7 @@ std::unique_ptr<KumaECS::Scene> CreateScene()
   // Create and add a light.
   auto light = newScene->CreateEntity();
   auto &lightTransform = newScene->AddComponentToEntity<SSCubes::Transform>(light);
-  lightTransform.mPosition = KumaGL::Vec3(10, 10, 0);
+  lightTransform.mPosition = KumaGL::Vec3(0, 10, 0);
 
   auto &lightComponent = newScene->AddComponentToEntity<SSCubes::Light>(light);
   lightComponent.mColor = KumaGL::Vec3(0.9, 0.9, 0.9);
@@ -223,6 +232,11 @@ int main()
   LoadResources();
   auto gameScene = CreateScene();
 
+  // Run the scene for one frame to display the cubes, even if the user hasn't
+  // pressed Enter yet.
+  glfwSwapBuffers(window);
+  gameScene->OperateSystems(0);
+
   // Run until instructed to close.
   double prevTime = glfwGetTime();
   while (!glfwWindowShouldClose(window))
@@ -234,9 +248,12 @@ int main()
     glfwPollEvents();
     glfwSwapBuffers(window);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (running)
+    {
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    gameScene->OperateSystems(dt);
+      gameScene->OperateSystems(dt);
+    }
   }
 
   return 0;
